@@ -1,5 +1,7 @@
 # inclass12
-
+undergraduate
+Clarence Li
+made for android uhh flutter packages yeah idk dude
 A new Flutter project.
 
 ## Getting Started
