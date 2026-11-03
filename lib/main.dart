@@ -26,6 +26,8 @@ class _ProductPageState extends State<ProductPage> {
   late final _productStream = _products.snapshots();
 
   String _searchQuery = '';
+  double? _minPrice;
+  double? _maxPrice;
 
   Future<void> _createOrUpdate(
     [QueryDocumentSnapshot<Map<String, dynamic>>? document]
@@ -95,6 +97,31 @@ class _ProductPageState extends State<ProductPage> {
             },
           ),
         ),
+        Padding(padding: const EdgeInsets.all(12), child: 
+        Row(children: [
+          Expanded(child: 
+            TextField(keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Minimum Price', border: OutlineInputBorder(),),
+            
+            onChanged: (value){
+              setState((){
+                _minPrice = double.tryParse(value);
+              });
+            }
+          ,)
+          ),
+          Expanded(child: 
+            TextField(keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Maximum Price', border: OutlineInputBorder(),),
+            
+            onChanged: (value){
+              setState((){
+                _maxPrice = double.tryParse(value);
+              });
+            }
+          ,))
+        ],)
+        ),
       Expanded(child:StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _productStream,
         builder: (context, snapshot) {
@@ -107,9 +134,17 @@ class _ProductPageState extends State<ProductPage> {
             return const Center(child: CircularProgressIndicator());
           }
           final documents = snapshot.data!.docs.where((document){
+            final data = document.data();
             final name = document.data()['name'];
-            return _searchQuery.isEmpty ||
+            final price = data['price'];
+            final nameQueried = _searchQuery.isEmpty || 
               (name is String && name.toLowerCase().contains(_searchQuery));
+
+            final priceQueried = price is num && price.isFinite &&
+              (_minPrice == null || price >= _minPrice!) &&
+              (_maxPrice == null || price <= _maxPrice!);
+            
+            return nameQueried && priceQueried;
 
           }).toList();
           if (documents.isEmpty) {
